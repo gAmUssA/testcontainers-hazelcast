@@ -1,0 +1,13 @@
+apply plugin: 'java'
+apply plugin: 'idea'
+
+
+repositories {
+    jcenter()
+}
+
+dependencies {
+    compile 'org.testcontainers:testcontainers:1.2.1'
+    compile 'ch.qos.logback:logback-classic:1.1.11'
+    testCompile 'com.hazelcast:hazelcast-client:3.8.1'
+}
