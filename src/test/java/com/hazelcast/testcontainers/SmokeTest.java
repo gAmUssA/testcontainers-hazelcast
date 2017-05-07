@@ -8,6 +8,7 @@ import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
 
+import static com.hazelcast.testcontainers.HazelcastContainer.createHazelcastOSSContainer;
 import static org.hamcrest.CoreMatchers.is;
 
 /**
@@ -19,7 +20,9 @@ import static org.hamcrest.CoreMatchers.is;
  */
 public class SmokeTest {
     @ClassRule
-    public static HazelcastContainer hazelcast = HazelcastContainer.createContainer(false).withExposedPorts(5701);
+    public static HazelcastContainer hazelcast =
+            createHazelcastOSSContainer()
+                    .withExposedPorts(5701);
 
     private HazelcastInstance hazelcastClient;
 

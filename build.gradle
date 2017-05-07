@@ -1,13 +1,29 @@
 apply plugin: 'java'
 apply plugin: 'idea'
-
+apply plugin: 'groovy'
 
 repositories {
     jcenter()
 }
 
 dependencies {
+    compile 'org.codehaus.groovy:groovy-all:2.4.11'
+    testCompile 'org.projectlombok:lombok:1.16.16'
+
     compile 'org.testcontainers:testcontainers:1.2.1'
     compile 'ch.qos.logback:logback-classic:1.1.11'
+
+    // test dependencies
+    testCompile 'com.hazelcast:hazelcast:3.8.1'
     testCompile 'com.hazelcast:hazelcast-client:3.8.1'
+
+    testCompile 'com.squareup.okhttp3:okhttp:3.7.0'
 }
+
+//sourceSets.main.compileClasspath += configurations.provided
+// groovy classes can be used in Java
+sourceSets.main.java.srcDirs = []
+sourceSets.main.groovy.srcDirs = ['src/main/java', 'src/main/groovy']
+
+sourceSets.test.java.srcDirs = []
+sourceSets.test.groovy.srcDirs = ["src/test/java", "src/test/groovy"]
