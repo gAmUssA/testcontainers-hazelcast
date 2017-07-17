@@ -22,21 +22,29 @@ public class HazelcastTestApp<SELF extends HazelcastTestApp<SELF>> extends Hazel
     private final HazelcastInstance hazelcastClient = HazelcastClient.newHazelcastClient(initHazelcastClient());
 
     public HazelcastTestApp() {
-        super(HAZELCAST_DOCKER_IMAGE_NAME);
-        withLogConsumer(new Slf4jLogConsumer(log));
-        withExposedPorts(5701);
-        setWaitStrategy(Wait.forListeningPort());
+        super(HAZELCAST_DOCKER_IMAGE_NAME + ":latest");
 
         clientConfigFile = null;
     }
 
-    public HazelcastTestApp(String dockerImage, String configFile, String clientConfigFile){
-        super(dockerImage);
+    @Override
+    protected void configure() {
+        super.configure();
         withLogConsumer(new Slf4jLogConsumer(log));
-        withClasspathResourceMapping(configFile, "/opt/hazelcast/hazelcast.xml", BindMode.READ_ONLY);
         withExposedPorts(5701);
         setWaitStrategy(Wait.forListeningPort());
+    }
 
+    public HazelcastTestApp(String dockerImage, String configFile, String clientConfigFile) {
+        super(dockerImage);
+
+        withClasspathResourceMapping(configFile, "/opt/hazelcast/hazelcast.xml", BindMode.READ_ONLY);
+        this.clientConfigFile = clientConfigFile;
+    }
+
+    public HazelcastTestApp(String dockerImage, String versionTag, String configFile, String clientConfigFile) {
+        super(dockerImage, versionTag);
+        withClasspathResourceMapping(configFile, "/opt/hazelcast/hazelcast.xml", BindMode.READ_ONLY);
         this.clientConfigFile = clientConfigFile;
     }
 
@@ -44,14 +52,14 @@ public class HazelcastTestApp<SELF extends HazelcastTestApp<SELF>> extends Hazel
         ClientConfig cc = null;
         final String containerIpAddress = getContainerIpAddress();
         final Integer mappedPort = getMappedPort(getExposedPorts().get(0));
-        if (clientConfigFile != null){
+        if (clientConfigFile != null) {
             try {
                 cc = new XmlClientConfigBuilder(this.clientConfigFile).build();
                 cc.getNetworkConfig().addAddress(containerIpAddress + ":" + mappedPort);
             } catch (IOException e) {
                 e.printStackTrace();
             }
-        }else{
+        } else {
             cc = new ClientConfig();
             cc.getNetworkConfig().addAddress(containerIpAddress + ":" + mappedPort);
         }

@@ -18,7 +18,7 @@ class HazelcastContainer extends GenericContainer<HazelcastContainer> {
     public static String HAZELCAST_ENTERPRISE_DOCKER_IMAGE_NAME = "hazelcast/hazelcast-enterprise"
 
     protected HazelcastContainer(String dockerImageName) {
-        super("$dockerImageName:latest")
+        super(dockerImageName)
     }
 
     protected HazelcastContainer(String dockerImageName, String versionTag) {

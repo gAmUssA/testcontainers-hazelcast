@@ -5,6 +5,8 @@
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 
     <group>
+        <!-- note: inside container username may be different than outside -->
+        <!-- most likely it will be different -->
         <!--<name>TCInstance-${user.name}</name>-->
         <name>TCInstance</name>
         <password>testContainersRulez!</password>
