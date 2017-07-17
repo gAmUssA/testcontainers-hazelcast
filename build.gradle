@@ -14,15 +14,19 @@ repositories {
 
 dependencies {
     compile 'org.codehaus.groovy:groovy-all:2.4.11'
-    testCompile 'org.projectlombok:lombok:1.16.16'
+    compile 'org.projectlombok:lombok:1.16.16'
 
     compile 'org.testcontainers:testcontainers:1.4.0'
     compile 'ch.qos.logback:logback-classic:1.1.11'
 
+    // TODO check the latest version
+    compile "org.mongodb:mongo-java-driver:3.0.4"
+
+    compile "com.hazelcast:hazelcast:$hazelcast_version"
+    compile "com.hazelcast:hazelcast-client:$hazelcast_version"
+
     // test dependencies
-    testCompile "com.hazelcast:hazelcast:$hazelcast_version"
     testCompile "com.hazelcast:hazelcast:$hazelcast_version:tests"
-    testCompile "com.hazelcast:hazelcast-client:$hazelcast_version"
     testCompile "com.hazelcast:hazelcast-client:$hazelcast_version:tests"
 
     testCompile 'com.squareup.okhttp3:okhttp:3.7.0'
@@ -35,7 +39,15 @@ dependencies {
 }
 
 shadowJar {
+    baseName = "fatHazelcast"
     classifier = ''
+
+    dependencies {
+        // TODO exclude more
+        exclude(dependency('com.hazelcast:hazelcast'))
+        exclude(dependency('com.hazelcast:hazelcast-client'))
+        //exclude('com.hazelcast:hazelcast-client')
+    }
 }
 
 test {

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<hazelcast
+        xsi:schemaLocation="http://www.hazelcast.com/schema/config http://www.hazelcast.com/schema/config/hazelcast-config-3.8.xsd"
+        xmlns="http://www.hazelcast.com/schema/config"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+
+    <group>
+        <name>TCInstance</name>
+        <password>testContainersRulez!</password>
+    </group>
+
+    <!--
+        For development purposes, MongoDB should be installed locally according to this manual
+        https://docs.mongodb.org/manual/installation/
+    -->
+    <map name="supplements">
+        <map-store enabled="true" initial-mode="LAZY">
+            <class-name>com.hazelcast.loader.MongoMapStore</class-name>
+            <properties>
+                <!--<property name="mongo.url">mongodb://localhost:27017</property>-->
+                <!-- actual hostname of mongodb will be passed via environment variablу -->
+                <property name="mongo.url">${mongo.url}</property>
+                <property name="mongo.db">mydb</property>
+                <property name="mongo.collection">supplements</property>
+            </properties>
+        </map-store>
+    </map>
+</hazelcast>

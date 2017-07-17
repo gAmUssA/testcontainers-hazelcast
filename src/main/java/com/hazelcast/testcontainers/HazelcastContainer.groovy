@@ -3,6 +3,7 @@ package com.hazelcast.testcontainers
 import groovy.transform.CompileStatic
 import org.testcontainers.containers.BindMode
 import org.testcontainers.containers.GenericContainer
+import org.testcontainers.containers.traits.LinkableContainer
 
 /**
  * Hazelcast Docker container 
@@ -37,8 +38,21 @@ class HazelcastContainer extends GenericContainer<HazelcastContainer> {
         return createHazelcastOSSContainerWithConfigFile("latest", configFile)
     }
 
+    /**
+     *
+     * Creates container with version and hazelcast.xml config
+     *
+     * @param versionTag
+     * @param configFile
+     * @return
+     */
     static HazelcastContainer createHazelcastOSSContainerWithConfigFile(String versionTag, String configFile) {
-        return new HazelcastContainer("$HAZELCAST_DOCKER_IMAGE_NAME:$versionTag").withClasspathResourceMapping(configFile, "/opt/hazelcast/$configFile", BindMode.READ_ONLY)
+        return new HazelcastContainer("$HAZELCAST_DOCKER_IMAGE_NAME:$versionTag").withClasspathResourceMapping(configFile, "/opt/hazelcast/hazelcast.xml", BindMode.READ_ONLY)
+    }
+
+    public HazelcastContainer withLinkToContainer(LinkableContainer otherContainer, String alias) {
+        addLink(otherContainer, alias)
+        return this
     }
 
     /*static HazelcastContainer createHazelcastOSSContainer() {
