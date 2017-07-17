@@ -8,7 +8,6 @@ import com.hazelcast.core.IMap;
 import com.hazelcast.loader.Supplement;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.ClassRule;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.RuleChain;
 import org.testcontainers.containers.BindMode;
@@ -34,11 +33,12 @@ public class MongoMapLoaderTest {
     @ClassRule
     public static Network network = Network.newNetwork();
 
-    public static GenericContainer mongo = new GenericContainer("mongo:3.1.5")
-            .withLogConsumer(new Slf4jLogConsumer(log))
-            .withNetwork(network)
-            .waitingFor(Wait.forListeningPort())
-            .withExposedPorts(MONGO_PORT);
+    public static GenericContainer mongo =
+            new GenericContainer("mongo:3.1.5")
+                    .withLogConsumer(new Slf4jLogConsumer(log))
+                    .withNetwork(network)
+                    .waitingFor(Wait.forListeningPort())
+                    .withExposedPorts(MONGO_PORT);
 
     public static HazelcastContainer hazelcast =
             createHazelcastOSSContainerWithConfigFile("latest", "hazelcast-loaderTest.xml")
@@ -48,11 +48,17 @@ public class MongoMapLoaderTest {
                     .waitingFor(Wait.forListeningPort())
                     .withExposedPorts(5701)
                     .withClasspathResourceMapping("fatHazelcast.jar", "/opt/hazelcast/lib/fatHazelcast.jar", BindMode.READ_ONLY)
-                    .withEnv("CLASSPATH", "/opt/hazelcast/lib");
-                    //.withEnv("mongo.url", "mongodb://" + mongo.getContainerIpAddress() + ":" + mongo.getFirstMappedPort());
+                    .withEnv("CLASSPATH", "/opt/hazelcast/lib")
+                    .withEnv("mongo.url", "mongodb://" + mongo.getContainerIpAddress() + ":" + mongo.getFirstMappedPort());
 
     @ClassRule
-    public static RuleChain r = RuleChain.outerRule(network).around(mongo).around(hazelcast);
+    public static RuleChain hazelcastAfterMongo =
+            RuleChain.outerRule(mongo).around(hazelcast);
+
+    @ClassRule
+    public static RuleChain r =
+            RuleChain.outerRule(network)
+                    .around(hazelcastAfterMongo);
 
     @Test
     public void testIt() throws Exception {
