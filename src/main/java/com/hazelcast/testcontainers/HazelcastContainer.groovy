@@ -1,7 +1,6 @@
 package com.hazelcast.testcontainers
 
 import groovy.transform.CompileStatic
-import groovy.transform.builder.Builder
 import org.testcontainers.containers.GenericContainer
 
 /**
@@ -25,7 +24,7 @@ class HazelcastContainer extends GenericContainer<HazelcastContainer> {
         return new HazelcastContainer("$HAZELCAST_DOCKER_IMAGE_NAME:$versionTag")
     }
 
-    static HazelcastContainer createHazelcastOSSContainer(){
+    static HazelcastContainer createHazelcastOSSContainer() {
         return new HazelcastContainer("$HAZELCAST_DOCKER_IMAGE_NAME:latest")
     }
 

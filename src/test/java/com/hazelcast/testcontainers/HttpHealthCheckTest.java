@@ -25,7 +25,7 @@ public class HttpHealthCheckTest {
     @ClassRule
     public static HazelcastContainer hazelcast = HazelcastContainer
             // http health was added in 3.8.x
-            .createHazelcastOSSContainer("3.8.1")
+            .createHazelcastOSSContainer("3.8.3")
             .withEnv("JAVA_OPTS", javaOpts)
             .withLogConsumer(new Slf4jLogConsumer(log))
             .withExposedPorts(5701);

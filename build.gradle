@@ -1,6 +1,12 @@
+plugins {
+    id "com.github.johnrengelman.shadow" version "1.2.4"
+}
+
 apply plugin: 'java'
 apply plugin: 'idea'
 apply plugin: 'groovy'
+
+ext.hazelcast_version = '3.8.3'
 
 repositories {
     jcenter()
@@ -10,20 +16,42 @@ dependencies {
     compile 'org.codehaus.groovy:groovy-all:2.4.11'
     testCompile 'org.projectlombok:lombok:1.16.16'
 
-    compile 'org.testcontainers:testcontainers:1.2.1'
+    compile 'org.testcontainers:testcontainers:1.4.0'
     compile 'ch.qos.logback:logback-classic:1.1.11'
 
     // test dependencies
-    testCompile 'com.hazelcast:hazelcast:3.8.1'
-    testCompile 'com.hazelcast:hazelcast-client:3.8.1'
+    testCompile "com.hazelcast:hazelcast:$hazelcast_version"
+    testCompile "com.hazelcast:hazelcast:$hazelcast_version:tests"
+    testCompile "com.hazelcast:hazelcast-client:$hazelcast_version"
+    testCompile "com.hazelcast:hazelcast-client:$hazelcast_version:tests"
 
     testCompile 'com.squareup.okhttp3:okhttp:3.7.0'
+    testCompile "io.github.openfeign:feign-core:9.3.1"
+    testCompile 'org.assertj:assertj-core:3.5.2'
+
+    // for Grapes and IDEA
+    //testCompileOnly "org.codehaus.groovy:groovy-all:2.4.7"
+    //testCompileOnly 'org.apache.ivy:ivy:2.4.0'
 }
 
-//sourceSets.main.compileClasspath += configurations.provided
+shadowJar {
+    classifier = ''
+}
+
+test {
+    dependsOn shadowJar
+
+    testLogging {
+        showStandardStreams true
+    }
+}
+
+// sourceSets.main.compileClasspath += configurations.provided
 // groovy classes can be used in Java
 sourceSets.main.java.srcDirs = []
 sourceSets.main.groovy.srcDirs = ['src/main/java', 'src/main/groovy']
 
 sourceSets.test.java.srcDirs = []
 sourceSets.test.groovy.srcDirs = ["src/test/java", "src/test/groovy"]
+
+sourceSets.test.resources.srcDir shadowJar.outputs.files.singleFile.parentFile
