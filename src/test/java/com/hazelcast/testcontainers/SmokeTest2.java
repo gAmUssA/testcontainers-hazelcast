@@ -5,18 +5,19 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import support.HazelcastTestApp;
 
+import static com.hazelcast.testcontainers.HazelcastContainer.*;
 import static org.hamcrest.CoreMatchers.is;
 
 /**
  * TODO
  *
- * @author Viktor Gamov on 5/2/17.
+ * @author Viktor Gamov on 7/17/17.
  * Twitter: @gamussa
  * @since 0.0.1
  */
-public class SmokeTest {
+public class SmokeTest2 {
     @ClassRule
-    public static HazelcastTestApp app = new HazelcastTestApp();
+    public static HazelcastTestApp app = new HazelcastTestApp(HAZELCAST_DOCKER_IMAGE_NAME, "hazelcast.xml", "hazelcast-client.xml");
 
     @Test
     public void simpleTest() {
