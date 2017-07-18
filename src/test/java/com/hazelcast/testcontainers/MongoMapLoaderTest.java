@@ -50,7 +50,7 @@ public class MongoMapLoaderTest {
                     .withExposedPorts(5701)
                     .withClasspathResourceMapping("fatHazelcast.jar", "/opt/hazelcast/lib/fatHazelcast.jar", BindMode.READ_ONLY)
                     .withEnv("CLASSPATH", "/opt/hazelcast/lib")
-                    .withEnv("JAVA_OPTS", "-Dmongo.url=mongodb://mongo:" + MONGO_PORT);
+                    .withCustomProperty("mongo.url=mongodb://mongo:" + MONGO_PORT);
 
     private static HazelcastInstance hazelcastClient;
     private static IMap<String, Supplement> supplements;
