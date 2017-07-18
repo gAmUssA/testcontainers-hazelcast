@@ -49,12 +49,7 @@ class HazelcastContainer extends GenericContainer<HazelcastContainer> {
     static HazelcastContainer createHazelcastOSSContainerWithConfigFile(String versionTag, String configFile) {
         return new HazelcastContainer("$HAZELCAST_DOCKER_IMAGE_NAME:$versionTag").withClasspathResourceMapping(configFile, "/opt/hazelcast/hazelcast.xml", BindMode.READ_ONLY)
     }
-
-    public HazelcastContainer withLinkToContainer(LinkableContainer otherContainer, String alias) {
-        addLink(otherContainer, alias)
-        return this
-    }
-
+    
     /*static HazelcastContainer createHazelcastOSSContainer() {
         return createContainer(false)
     }

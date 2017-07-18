@@ -40,7 +40,7 @@ import static com.mongodb.client.model.Filters.in;
  * MapStore implementation for MongoDB
  *
  * @author Viktor Gamov on 11/4/15.
- *         Twitter: @gamussa
+ * Twitter: @gamussa
  */
 @Slf4j
 public class MongoMapStore implements MapStore<String, Supplement>, MapLoaderLifecycleSupport {
@@ -67,7 +67,7 @@ public class MongoMapStore implements MapStore<String, Supplement>, MapLoaderLif
 
     @Override
     public Supplement load(String key) {
-        System.out.println("Load " + key);
+        log.info("Load {}", key);
         Document document = (Document) collection.find(eq("_id", key)).first();
         String name = (String) document.get("name");
         Integer price = document.getInteger("price");
@@ -76,7 +76,7 @@ public class MongoMapStore implements MapStore<String, Supplement>, MapLoaderLif
 
     @Override
     public Map<String, Supplement> loadAll(Collection keys) {
-        System.out.println("LoadAll " + keys);
+        log.info("LoadAll {}", keys);
         HashMap<String, Supplement> result = new HashMap<String, Supplement>();
 
         FindIterable<Document> id = collection.find(in("_id", keys));
@@ -90,7 +90,7 @@ public class MongoMapStore implements MapStore<String, Supplement>, MapLoaderLif
 
     @Override
     public Iterable<String> loadAllKeys() {
-        System.out.println("LoadAllKeys");
+        log.info("LoadAllKeys");
         List<String> keys = new LinkedList<String>();
         FindIterable<Document> ids = collection.find().projection(Projections.include("_id"));
         for (Document document : ids) {
@@ -101,6 +101,7 @@ public class MongoMapStore implements MapStore<String, Supplement>, MapLoaderLif
 
     @Override
     public void store(String key, Supplement value) {
+        log.info("Storing supplement {} with key {}", value, key);
         Document doc = new Document("name", value.getName()).append("price", value.getPrice()).append("_id", key);
         this.collection.insertOne(doc);
         //this.collection.replaceOne(doc, doc);
@@ -108,6 +109,7 @@ public class MongoMapStore implements MapStore<String, Supplement>, MapLoaderLif
 
     @Override
     public void storeAll(Map<String, Supplement> map) {
+        log.info("storeAll");
         List<InsertOneModel> batch = new LinkedList<InsertOneModel>();
         for (Map.Entry<String, Supplement> entry : map.entrySet()) {
             String key = entry.getKey();

@@ -7,9 +7,9 @@ import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IMap;
 import com.hazelcast.loader.Supplement;
 import lombok.extern.slf4j.Slf4j;
+import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
-import org.junit.rules.RuleChain;
 import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
@@ -17,6 +17,8 @@ import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.containers.wait.Wait;
 
 import static com.hazelcast.testcontainers.HazelcastContainer.createHazelcastOSSContainerWithConfigFile;
+import static com.hazelcast.testcontainers.MongoMapLoaderTest.MongoContainer.MONGO_PORT;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * A test for Hazelcast mapLoader with Mongo (in containers)
@@ -28,60 +30,78 @@ import static com.hazelcast.testcontainers.HazelcastContainer.createHazelcastOSS
 @Slf4j
 public class MongoMapLoaderTest {
 
-    private static final int MONGO_PORT = 27017;
-
     @ClassRule
     public static Network network = Network.newNetwork();
 
-    public static GenericContainer mongo =
-            new GenericContainer("mongo:3.1.5")
+    @ClassRule
+    public static MongoContainer mongo =
+            new MongoContainer("mongo:3.1.5")
+                    .withExposedPorts(MONGO_PORT)
                     .withLogConsumer(new Slf4jLogConsumer(log))
                     .withNetwork(network)
-                    .waitingFor(Wait.forListeningPort())
-                    .withExposedPorts(MONGO_PORT);
-
+                    .withNetworkAliases("mongo")
+                    .waitingFor(Wait.forListeningPort());
+    @ClassRule
     public static HazelcastContainer hazelcast =
             createHazelcastOSSContainerWithConfigFile("latest", "hazelcast-loaderTest.xml")
-                    .withLinkToContainer(mongo, "mongo")
                     .withLogConsumer(new Slf4jLogConsumer(log))
                     .withNetwork(network)
                     .waitingFor(Wait.forListeningPort())
                     .withExposedPorts(5701)
                     .withClasspathResourceMapping("fatHazelcast.jar", "/opt/hazelcast/lib/fatHazelcast.jar", BindMode.READ_ONLY)
                     .withEnv("CLASSPATH", "/opt/hazelcast/lib")
-                    .withEnv("mongo.url", "mongodb://" + mongo.getContainerIpAddress() + ":" + mongo.getFirstMappedPort());
+                    .withEnv("JAVA_OPTS", "-Dmongo.url=mongodb://mongo:" + MONGO_PORT);
 
-    @ClassRule
-    public static RuleChain hazelcastAfterMongo =
-            RuleChain.outerRule(mongo).around(hazelcast);
+    private static HazelcastInstance hazelcastClient;
+    private static IMap<String, Supplement> supplements;
 
-    @ClassRule
-    public static RuleChain r =
-            RuleChain.outerRule(network)
-                    .around(hazelcastAfterMongo);
-
-    @Test
-    public void testIt() throws Exception {
+    @BeforeClass
+    public static void initClient() throws Exception {
         ClientConfig cc = new XmlClientConfigBuilder("hazelcast-client.xml").build();
         cc.getNetworkConfig().addAddress(hazelcast.getContainerIpAddress() + ":" + hazelcast.getFirstMappedPort());
-        final HazelcastInstance hazelcastClient = HazelcastClient.newHazelcastClient(cc);
+        hazelcastClient = HazelcastClient.newHazelcastClient(cc);
+        supplements = hazelcastClient.getMap("supplements");
+    }
 
-        IMap<String, Supplement> supplements = hazelcastClient.getMap("supplements");
-        System.out.println(supplements.size());
 
+    @Test
+    public void shouldLoadFromMongo() throws Exception {
         supplements.set("1", new Supplement("bcaa", 10));
         supplements.set("2", new Supplement("protein", 100));
         supplements.set("3", new Supplement("glucosamine", 200));
 
-        System.out.println(supplements.size());
+        assertThat(supplements.size()).isNotNull().isEqualTo(3);
+    }
 
+    @Test
+    public void shouldBeEmptyAfterEvict() throws Exception {
         supplements.evictAll();
+        assertThat(supplements.size()).isNotNull().isEqualTo(0);
+    }
 
-        System.out.println(supplements.size());
-
+    @Test
+    public void shouldReloadFromStoreWithLoadAll() throws Exception {
         supplements.loadAll(true);
+        assertThat(supplements.size()).isNotNull().isEqualTo(3);
+    }
 
-        System.out.println(supplements.size());
+    static class MongoContainer extends GenericContainer<MongoContainer> {
+        public static final int MONGO_PORT = 27017;
 
+        public MongoContainer(String dockerImageName) {
+            super(dockerImageName);
+        }
+
+        @Override
+        protected void configure() {
+            super.configure();
+
+            withExposedPorts(MONGO_PORT);
+            waitingFor(Wait.forListeningPort());
+        }
+
+        public String getMongoUrl() {
+            return String.format("mongodb://%s:%d", this.getContainerIpAddress(), this.getFirstMappedPort());
+        }
     }
 }

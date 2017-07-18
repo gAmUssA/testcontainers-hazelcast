@@ -58,6 +58,13 @@ test {
     }
 }
 
+idea {
+    module {
+        downloadJavadoc = true
+        downloadSources = true
+    }
+}
+
 // sourceSets.main.compileClasspath += configurations.provided
 // groovy classes can be used in Java
 sourceSets.main.java.srcDirs = []
